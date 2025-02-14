@@ -3,20 +3,20 @@ import torch.nn as nn
 
 class Generator(nn.Module):
     def __init__(self, z_dim, img_shape):
-        super(Generator, self().__init__())
+        super(Generator, self).__init__()
         
         self.img_shape = img_shape
 
         ## Experiment later, first develop a working baselie
         # self.model = nn.Sequential(
         #     nn.Linear(z_dim, 128),
-        #     nn.LeakyRelu(0.2, inplace=True),
+        #     nn.LeakyReLU(0.2, inplace=True),
         #     nn.Linear(128, 256),
         #     nn.BatchNorm1d(256, 0.8),
-        #     nn.LeakyRelu(0.2, inplace=True),
+        #     nn.LeakyReLU(0.2, inplace=True),
         #     nn.Linear(256, 514),
         #     nn.BatchNorm1d(512, 0.8),
-        #     nn.LeakyRelu(0.2, inplace=True),
+        #     nn.LeakyReLU(0.2, inplace=True),
         #     nn.Linear(512, np.prod(img_shape)),
         #     nn.Tanh()
         # )
@@ -25,19 +25,18 @@ class Generator(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(z_dim, 128),
-            nn.Relu(True),
+            nn.ReLU(True),
             nn.Linear(128, 256),
-            nn.Relu(True),
+            nn.ReLU(True),
             nn.Linear(256, 512),
-            nn.Relu(True),
+            nn.ReLU(True),
             nn.Linear(512, 1024),
-            nn.Relu(True),
-            nn.Linear(1024, np.prod(img_shape)),
+            nn.ReLU(True),
+            nn.Linear(1024,img_shape),
             nn.Tanh()
         )
 
     def forward(self, z):
         img = self.model(z)
-        img = img.view(img.size(0), *self.img_shape)
 
         return img

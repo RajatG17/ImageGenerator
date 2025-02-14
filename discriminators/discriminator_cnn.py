@@ -17,8 +17,7 @@ class Discriminator(nn.Module):
 
         ## simple baseline model
         self.model = nn.Sequential(
-            np.Flatten(),
-            nn.Linear(np.prod(img_shape), 1024),
+            nn.Linear(img_shape, 1024),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(1024, 512),
             nn.LeakyReLU(0.2, inplace=True),
@@ -30,4 +29,4 @@ class Discriminator(nn.Module):
 
     
     def forward(self, x):
-        return self.fc(x)
+        return self.model(x)

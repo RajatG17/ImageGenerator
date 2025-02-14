@@ -1,8 +1,14 @@
 import os
 import numpy as np
 import torch
+import pickle
+import numpy as np
 
-from unpickle import unpickle
+def unpickle(file):
+    with open(file, 'rb') as fo:
+        data = pickle.load(fo, encoding="bytes")
+    return data
+
 
 class CIFAR100Dataset:
     def __init__(self, images, labels):
@@ -16,7 +22,6 @@ class CIFAR100Dataset:
         image = torch.tensor(self.images[idx], dtype=torch.float32)
         label = torch.tensor(self.labels[idx], dtype=torch.long)
         return image, label
-    
 
 
 
@@ -44,9 +49,9 @@ def preprocess_data(data_dict):
     labels = data_dict[b'fine_labels']
 
     # Normalize the data
-    data = data / 255.0
-    data = data.reshape(-1, 3, 32, 32)
-    data = data.transpose(0, 2, 3, 1)
+    images = images / 255.0
+    images = images.reshape(-1, 3, 32, 32)
+    images = images.transpose(0, 2, 3, 1)
 
     return images, labels
 

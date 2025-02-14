@@ -1,3 +1,5 @@
 venv/ 
 dataset/
+generated_images/
+*.pyc
 .DS_Store
