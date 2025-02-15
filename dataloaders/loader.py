@@ -11,9 +11,10 @@ def unpickle(file):
 
 
 class CIFAR100Dataset:
-    def __init__(self, images, labels):
+    def __init__(self, images, labels, transform=None):
         self.images = images
         self.labels = labels
+        self.transform = transform
     
     def __len__(self):
         return len(self.images)
@@ -21,6 +22,13 @@ class CIFAR100Dataset:
     def __getitem__(self, idx):
         image = torch.tensor(self.images[idx], dtype=torch.float32)
         label = torch.tensor(self.labels[idx], dtype=torch.long)
+
+        if isinstance(image, np.ndarray):
+            image = torch.tensor(image, dtype=torch.float32)  # Convert to PyTorch tensor
+
+        if self.transform:
+            image = self.transform(image)
+
         return image, label
 
 
@@ -49,7 +57,7 @@ def preprocess_data(data_dict):
     labels = data_dict[b'fine_labels']
 
     # Normalize the data
-    images = images / 255.0
+    images = (images / 127.5) - 1.0
     images = images.reshape(-1, 3, 32, 32)
     images = images.transpose(0, 2, 3, 1)
 
