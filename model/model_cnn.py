@@ -21,7 +21,7 @@ def generate_and_save_images(generator, epoch, z_dim, save_dir="generated_images
         fake_images = generator(z).detach().cpu().numpy()
 
     # Reshape and denormalize images
-    fake_images = (fake_images * 127.5 + 127.5).astype(np.float32)  # Scale back to [0, 255]
+    fake_images = (fake_images * 0.5 + 0.5).astype(np.float32)  # Scale back to [0, 255]
     fake_images = fake_images.reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)  # Reshape to (N, 32, 32, 3)
 
     # Plot images

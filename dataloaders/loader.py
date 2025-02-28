@@ -22,10 +22,7 @@ class CIFAR100Dataset:
     def __getitem__(self, idx):
         image = torch.tensor(self.images[idx], dtype=torch.float32)
         label = torch.tensor(self.labels[idx], dtype=torch.long)
-
-        if isinstance(image, np.ndarray):
-            image = torch.tensor(image, dtype=torch.float32)  # Convert to PyTorch tensor
-
+    
         if self.transform:
             image = self.transform(image)
 
@@ -60,6 +57,7 @@ def preprocess_data(data_dict):
     images = (images / 127.5) - 1.0
     images = images.reshape(-1, 3, 32, 32)
     images = images.transpose(0, 2, 3, 1)
+
 
     return images, labels
 
