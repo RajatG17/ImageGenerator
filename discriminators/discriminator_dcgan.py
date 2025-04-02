@@ -25,8 +25,8 @@ class Discriminator(nn.Module):
         ) 
     
     def forward(self, x):
-        output = self.model(x)
-        output = output.reshape(output.shape[0], -1)  # Flatten the output
+        output = self.model(x).contiguous()
+        output = output.view(output.shape[0], -1)  # Flatten the output
         # print(f"Discriminator Output Shape: {output.shape}")
 
         return output

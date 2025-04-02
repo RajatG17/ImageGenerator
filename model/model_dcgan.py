@@ -32,6 +32,9 @@ def show_training_images(dataloader, num_images=16):
 def train_dcgan(generator, discriminator, train_loader, num_epochs, z_dim, device):
     
     for epoch in range(num_epochs):
+        epoch_d_loss = 0.0
+        epoch_g_loss = 0.0
+
         for batch_idx, (real_images, _) in enumerate(train_loader):
             real_images = real_images.permute(0, 3, 1, 2).to(device)
             # print("Real Image shape", real_images.shape)
@@ -49,6 +52,7 @@ def train_dcgan(generator, discriminator, train_loader, num_epochs, z_dim, devic
             real_loss = adversarial_loss(discriminator(real_images), real_labels)
             fake_loss = adversarial_loss(discriminator(fake_images.detach()), fake_labels)
             d_loss = (real_loss + fake_loss)
+            epoch_d_loss += d_loss.item()
             d_loss.backward()
             optimizer_D.step()
 
@@ -58,13 +62,16 @@ def train_dcgan(generator, discriminator, train_loader, num_epochs, z_dim, devic
             fake_images = generator(noise)
             fake_labels = torch.ones(batch_size, 1, device=device)
             loss_G = adversarial_loss(discriminator(fake_images), fake_labels)
+            epoch_g_loss += loss_G.item()
             loss_G.backward()
             optimizer_G.step()
 
-            if (epoch)%10 == 0:
-                save_generated_images(generator, epoch, z_dim, device)
-                print(f"Epoch [{epoch+1}/{num_epochs}], Batch [{batch_idx}/{len(train_loader)}], D Loss: {d_loss:.4f}, G Loss: {loss_G:.4f}") #
+        print(f"Epoch [{epoch+1}/{num_epochs}], D Loss: {(epoch_d_loss/len(train_loader)):.4f}, G Loss: {(epoch_g_loss/len(train_loader)):.4f}") #
         
+        if (epoch)%10 == 0:
+            save_generated_images(generator, epoch, z_dim, device)
+            
+    
     print('Training Finished')
 
 def save_generated_images(generator, epoch, z_dim, device, save_dir="generated_images"):
@@ -95,19 +102,21 @@ if __name__ == "__main__":
     img_channels = 3
     feature_dim = 64
     batch_size = 64
-    lr = 2e-4
+    lr_d = 2e-5
+    lr_g = 5e-4
     b1 = 0.5
     b2 = 0.999
     num_epochs = 100
     device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
+
 
     # generator and discriminator
     generator = Generator(z_dim, img_channels, feature_dim).to(device)
     discriminator = Discriminator(img_channels=img_channels, feature_dim=feature_dim).to(device)
 
     # optimizer for generator and discriminator
-    optimizer_G = torch.optim.Adam(generator.parameters(), lr=lr, betas = (b1, b2))
-    optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=lr, betas=(b1, b2))
+    optimizer_G = torch.optim.Adam(generator.parameters(), lr=lr_g, betas = (b1, b2))
+    optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=lr_d, betas=(b1, b2))
 
     # Loss function
     adversarial_loss = torch.nn.BCELoss()
@@ -119,7 +128,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     # Visualize some training images
-    show_training_images(train_loader)
+    # show_training_images(train_loader)
 
     train_dcgan(generator, discriminator, train_loader, num_epochs, z_dim, device)
 
