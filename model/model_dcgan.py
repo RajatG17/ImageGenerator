@@ -9,6 +9,7 @@ import numpy as np
 from generators.generator_dcgan import Generator
 from discriminators.discriminator_dcgan import Discriminator
 from dataloaders.loader import load_cifar100, CIFAR100Dataset
+from visualizations.plot_losses import plot_losses
 
 # visualize data
 def show_training_images(dataloader, num_images=16):
@@ -61,16 +62,21 @@ def train_dcgan(generator, discriminator, train_loader, num_epochs, z_dim, devic
             noise = torch.randn(batch_size, z_dim, 1, 1, device=device)
             fake_images = generator(noise)
             fake_labels = torch.ones(batch_size, 1, device=device)
-            loss_G = adversarial_loss(discriminator(fake_images), fake_labels)
-            epoch_g_loss += loss_G.item()
-            loss_G.backward()
+            g_loss = adversarial_loss(discriminator(fake_images), fake_labels)
+            epoch_g_loss += g_loss.item()
+            g_loss.backward()
             optimizer_G.step()
+
+            g_losses.append(g_loss.item())
+            d_losses.append(d_loss.item())
 
         print(f"Epoch [{epoch+1}/{num_epochs}], D Loss: {(epoch_d_loss/len(train_loader)):.4f}, G Loss: {(epoch_g_loss/len(train_loader)):.4f}") #
         
-        if (epoch)%10 == 0:
+        if (epoch)%10:
             save_generated_images(generator, epoch, z_dim, device)
-            
+
+    # Plot losses
+    plot_losses(d_losses, g_losses, title="DCGAN Losses")      
     
     print('Training Finished')
 
@@ -102,11 +108,11 @@ if __name__ == "__main__":
     img_channels = 3
     feature_dim = 64
     batch_size = 64
-    lr_d = 2e-5
+    lr_d = 1e-4
     lr_g = 5e-4
     b1 = 0.5
     b2 = 0.999
-    num_epochs = 100
+    num_epochs = 10
     device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
 
 
@@ -129,6 +135,10 @@ if __name__ == "__main__":
 
     # Visualize some training images
     # show_training_images(train_loader)
+
+    # Store losses
+    d_losses = []
+    g_losses = []
 
     train_dcgan(generator, discriminator, train_loader, num_epochs, z_dim, device)
 

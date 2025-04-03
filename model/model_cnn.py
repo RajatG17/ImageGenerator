@@ -10,6 +10,8 @@ from generators.generator_cnn import Generator
 from discriminators.discriminator_cnn import Discriminator
 from dataloaders.loader import load_cifar100, CIFAR100Dataset
 
+from visualizations.plot_losses import plot_losses
+
 
 
 def generate_and_save_images(generator, epoch, z_dim, save_dir="generated_images"):
@@ -99,6 +101,12 @@ show_training_images(train_loader)
 real_label = 1
 fake_label = 0
 
+# Storing the losses
+g_losses = []
+d_losses = []
+
+# Training Loop
+
 for epoch in range(num_epochs):
     for real_imgs, _ in train_loader:
         real_imgs = real_imgs.view(-1, img_shape).to(device) # Flattening images
@@ -126,11 +134,17 @@ for epoch in range(num_epochs):
         g_loss.backward()
         optimizer_G.step()
 
+        g_losses.append(g_loss.item())
+        d_losses.append(d_loss.item())
+
+
         if (epoch+1)%100 == 0:
             generate_and_save_images(generator, epoch, z_dim)
 
+    # Print losses
     print(f"Epoch [{epoch+1}/{num_epochs}], d_loss: {d_loss.item()}, g_loss: {g_loss.item()}")
 
+plot_losses(d_losses, g_losses, "CNN GAN Losses")
 print("Training finished")
 
 
